@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Directorio de Proveedores</title>
+    
+    <!-- CSS de DataTables Core -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <!-- CSS de DataTables Buttons -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        h2 {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h2>Lista de Proveedores</h2>
+    
+    <table id="tablaProveedores" class="display" style="width:100%">
+        <thead>
+            <tr>
+                <th>ID Proveedor</th>
+                <th>Nombre</th>
+                <th>Teléfono</th>
+                <th>Dirección</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for proveedor in proveedores %}
+            <tr>                
+                <td>{{ proveedor.idProveedor }}</td>
+                <td>{{ proveedor.nombre }}</td>
+                <td>{{ proveedor.telefono }}</td>
+                <td>{{ proveedor.direccion }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4">No hay proveedores registrados en la base de datos.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    
+    <!-- JS de DataTables Core -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    
+    <!-- JS de DataTables Buttons y JSZip -->
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+
+    <!-- Script de Inicialización -->
+    <script>
+        $(document).ready(function() {
+            $('#tablaProveedores').DataTable({
+                // dom 'Bfrtip' habilita los Botones (B), filtro (f), procesamiento (r), tabla (t), información (i) y paginación (p)
+                dom: 'Bfrtip',
+                buttons: [
+                    {
+                        extend: 'excelHtml5',
+                        text: 'Exportar a Excel',
+                        title: 'Reporte_de_Proveedores'
+                    }
+                ],
+                //Cambiar el idioma a español
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+                }
+            });
+        });
+    </script>
+</body>
+</html>
