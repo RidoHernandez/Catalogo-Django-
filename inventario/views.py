@@ -1,6 +1,7 @@
 from django.shortcuts import render
 
 from .models import DetalleVenta, Proveedor
+from .models import DetalleVenta, Proveedor
 
 # Create your views here.
 
