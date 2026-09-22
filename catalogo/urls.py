@@ -21,6 +21,8 @@ from inventario.views import lista_detalles_venta, proveedores_lista
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', proveedores_lista, name='inicio'),
     path('proveedores/', proveedores_lista, name='proveedores_lista'),
     path('detalles-venta/', lista_detalles_venta, name='lista_detalles_venta'),
+    path('catalogo/', proveedores_lista, name='catalogo')
 ]
