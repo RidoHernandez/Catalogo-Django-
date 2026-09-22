@@ -18,7 +18,10 @@ from django.contrib import admin
 from django.contrib.admin import views
 from django.urls import path
 
+from inventario.views import lista_detalles_venta
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('proveedores/', views.lista_proveedores, name='lista_proveedores'),
+    path('detalles-venta/', lista_detalles_venta, name='lista_detalles_venta'),
 ]

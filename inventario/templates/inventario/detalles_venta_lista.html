@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalles de Venta</title>
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.5/css/dataTables.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.2.5/css/buttons.dataTables.min.css">
+</head>
+<body>
+    <main>
+        <h1>Detalles de Venta</h1>
+
+        <table id="detalles-venta" class="display">
+            <thead>
+                <tr>
+                    <th>Venta</th>
+                    <th>Ropa</th>
+                    <th>Cantidad</th>
+                    <th>Precio unitario</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for detalle in detalles %}
+                    <tr>
+                        <td>{{ detalle.venta.idVenta }}</td>
+                        <td>{{ detalle.ropa }}</td>
+                        <td>{{ detalle.cantidad }}</td>
+                        <td>{{ detalle.precioUnitario|floatformat:2 }}</td>
+                        <td>{{ detalle.subtotal|floatformat:2 }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5">No hay detalles de venta registrados.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </main>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/2.3.5/js/dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.2.5/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.2.5/js/buttons.html5.min.js"></script>
+    <script>
+        new DataTable('#detalles-venta', {
+            layout: {
+                topStart: {
+                    buttons: [
+                        {
+                            extend: 'excelHtml5',
+                            title: 'Detalles de Venta'
+                        }
+                    ]
+                }
+            },
+            language: {
+                url: 'https://cdn.datatables.net/plug-ins/2.3.5/i18n/es-MX.json'
+            }
+        });
+    </script>
+</body>
+</html>
