@@ -17,12 +17,22 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from inventario.views import lista_detalles_venta, proveedores_lista
+from inventario.views import (
+    catalogo_lista,
+    inventario_editar,
+    lista_detalles_venta,
+    proveedores_lista,
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', proveedores_lista, name='inicio'),
     path('proveedores/', proveedores_lista, name='proveedores_lista'),
     path('detalles-venta/', lista_detalles_venta, name='lista_detalles_venta'),
-    path('catalogo/', proveedores_lista, name='catalogo')
+    path('catalogo/', catalogo_lista, name='catalogo'),
+    path(
+        'catalogo/<int:id_ropa>/inventario/',
+        inventario_editar,
+        name='inventario_editar',
+    ),
 ]

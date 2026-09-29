@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar inventario</title>
+</head>
+<body>
+    <main>
+        <h1>Editar inventario</h1>
+
+        <section aria-label="Prenda seleccionada">
+            <p>ID ropa: {{ prenda.idRopa }}</p>
+            <p>Modelo: {{ prenda.modelo }}</p>
+            <p>Marca: {{ prenda.marca }}</p>
+            <p>Tipo: {{ prenda.tipo }}</p>
+            <p>Color: {{ prenda.color.descripcion|default:"—" }}</p>
+        </section>
+
+        {% if inventarios %}
+            <form method="post">
+                {% csrf_token %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th scope="col">Talla</th>
+                            <th scope="col">Unidades</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fila in filas %}
+                            <tr>
+                                <td>{{ fila.inventario.talla }}</td>
+                                <td>
+                                    <input
+                                        id="{{ fila.campo }}"
+                                        name="{{ fila.campo }}"
+                                        type="number"
+                                        min="0"
+                                        step="1"
+                                        value="{{ fila.valor }}"
+                                        {% if fila.error %}aria-invalid="true"{% endif %}
+                                        {% if fila.error %}aria-describedby="error-{{ fila.campo }}"{% endif %}
+                                    >
+                                    {% if fila.error %}
+                                        <span id="error-{{ fila.campo }}" role="alert">{{ fila.error }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <button type="submit">Guardar</button>
+            </form>
+        {% else %}
+            <p>Esta prenda no tiene registros de inventario por talla.</p>
+        {% endif %}
+
+        <a href="/catalogo/">Cancelar</a>
+    </main>
+</body>
+</html>
