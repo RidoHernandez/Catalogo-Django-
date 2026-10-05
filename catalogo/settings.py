@@ -78,11 +78,15 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'inventario',
         'USER': 'root',
-        'PASSWORD': '13Mayo2005@',
+        'PASSWORD': 'root',
         'HOST': 'localhost', 
         'PORT': '3306',
     }
 }
+
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/accounts/login/'
+LOGIN_URL = '/accounts/login/'
 
 
 # Password validation

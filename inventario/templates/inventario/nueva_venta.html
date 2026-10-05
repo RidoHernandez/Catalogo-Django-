@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Nueva Venta{% endblock %}
+
+{% block content %}
+<h2>Nueva Venta</h2>
+
+<form method="post" id="ventaForm">
+    {% csrf_token %}
+    <label for="cliente">Cliente:</label>
+    <select name="cliente" id="cliente" required>
+        {% for cliente in clientes %}
+            <option value="{{ cliente.pk }}" {% if cliente.pk == cliente_default.pk %}selected{% endif %}>
+                {{ cliente.nombre }}
+            </option>
+        {% endfor %}
+    </select>
+    <br><br>
+
+    <h3>Añadir Producto</h3>
+    <select id="productoSelect">
+        <option value="">Seleccione un producto</option>
+        {% for ropa in ropas %}
+            <option value="{{ ropa.pk }}" data-precio="{{ ropa.precio|stringformat:'f' }}" data-stock="{{ ropa.total_unidades }}">
+                {{ ropa.marca }} - {{ ropa.modelo }} (Stock: {{ ropa.total_unidades }}) - ${{ ropa.precio }}
+            </option>
+        {% endfor %}
+    </select>
+    <input type="number" id="cantidadInput" placeholder="Cantidad" min="1">
+    <button type="button" id="btnAgregar">Agregar a la venta</button>
+
+    <br><br>
+    <h3>Carrito</h3>
+    <table border="1" id="carritoTabla">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio Unit.</th>
+                <th>Subtotal</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Aquí se añaden los productos con JS -->
+        </tbody>
+    </table>
+    <br>
+    <p><strong>Total: $<span id="totalMonto">0.00</span></strong></p>
+
+    <button type="submit" id="btnCobrar">Cobrar</button>
+</form>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let carrito = [];
+
+    document.getElementById('btnAgregar').addEventListener('click', function() {
+        let select = document.getElementById('productoSelect');
+        let option = select.options[select.selectedIndex];
+        let cantidad = parseInt(document.getElementById('cantidadInput').value);
+
+        if (!option.value) {
+            alert('Seleccione un producto');
+            return;
+        }
+        if (isNaN(cantidad) || cantidad <= 0) {
+            alert('Ingrese una cantidad válida mayor a 0');
+            return;
+        }
+
+        let p_id = option.value;
+        let p_nombre = option.text.split(' (Stock')[0];
+        let p_precio = parseFloat(option.getAttribute('data-precio').replace(',', '.'));
+        let p_stock = parseInt(option.getAttribute('data-stock'));
+
+        // Verificar duplicados
+        let existente = carrito.find(item => item.id === p_id);
+        if (existente) {
+            alert('El producto ya está en el carrito. Modifique o elimine la línea existente si desea otra cantidad, o este sistema no permite duplicidad en diferentes líneas.');
+            return;
+        }
+
+        if (cantidad > p_stock) {
+            alert('Stock insuficiente. Solicitado: ' + cantidad + ', Disponible: ' + p_stock);
+            return;
+        }
+
+        let subtotal = p_precio * cantidad;
+
+        carrito.push({
+            id: p_id,
+            nombre: p_nombre,
+            cantidad: cantidad,
+            precio: p_precio,
+            subtotal: subtotal
+        });
+
+        actualizarTabla();
+        document.getElementById('cantidadInput').value = '';
+        select.selectedIndex = 0;
+    });
+
+    function eliminarItem(id) {
+        carrito = carrito.filter(item => item.id !== id);
+        actualizarTabla();
+    }
+
+    function actualizarTabla() {
+        let tbody = document.querySelector('#carritoTabla tbody');
+        tbody.innerHTML = '';
+        let total = 0;
+
+        carrito.forEach(item => {
+            total += item.subtotal;
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>
+                    <input type="hidden" name="producto[]" value="${item.id}">
+                    ${item.nombre}
+                </td>
+                <td>
+                    <input type="hidden" name="cantidad[]" value="${item.cantidad}">
+                    ${item.cantidad}
+                </td>
+                <td>$${item.precio.toFixed(2)}</td>
+                <td>$${item.subtotal.toFixed(2)}</td>
+                <td><button type="button" onclick="eliminarItem('${item.id}')">Eliminar</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('totalMonto').textContent = total.toFixed(2);
+    }
+    
+    document.getElementById('ventaForm').addEventListener('submit', function(e) {
+        if (carrito.length === 0) {
+            e.preventDefault();
+            alert('Debe agregar al menos un producto a la venta.');
+        }
+    });
+</script>
+{% endblock %}

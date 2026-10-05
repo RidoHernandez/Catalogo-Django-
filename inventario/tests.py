@@ -1,10 +1,17 @@
 from django.test import TestCase
+from django.contrib.auth.models import User, Group
 
 from .models import Inventario, Proveedor, Ropa
 
 
 class CatalogoListaTests(TestCase):
 	def setUp(self):
+		group_alm, _ = Group.objects.get_or_create(name='Almacenista')
+		group_admin, _ = Group.objects.get_or_create(name='Administrador')
+		self.user = User.objects.create_user(username='test_almacenista', password='password')
+		self.user.groups.add(group_alm, group_admin)
+		self.client.login(username='test_almacenista', password='password')
+		
 		proveedor = Proveedor.objects.create(
 			nombre="Proveedor de prueba",
 			telefono="5551234567",
@@ -64,6 +71,11 @@ class CatalogoListaTests(TestCase):
 
 class InventarioEditarTests(TestCase):
 	def setUp(self):
+		group, _ = Group.objects.get_or_create(name='Almacenista')
+		self.user = User.objects.create_user(username='test_almacenista', password='password')
+		self.user.groups.add(group)
+		self.client.login(username='test_almacenista', password='password')
+		
 		self.proveedor = Proveedor.objects.create(
 			nombre="Proveedor de prueba",
 			telefono="5551234567",

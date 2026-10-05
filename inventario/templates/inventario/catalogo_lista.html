@@ -1,81 +1,62 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo de ropa</title>
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
-</head>
-<body>
-    <main>
-        <h1>Catálogo de ropa</h1>
+{% extends "base.html" %}
 
-        {% if messages %}
-            <ul>
-                {% for message in messages %}
-                    <li class="{{ message.tags }}">{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
+{% block title %}Catálogo de ropa - Existencias{% endblock %}
 
-        {% if not prendas %}
-            <p>No hay ropa registrada.</p>
-        {% endif %}
+{% block content %}
+<h2>Catálogo de ropa (Almacén)</h2>
 
-        <table id="tablaCatalogo" class="display" style="width:100%">
-            <thead>
-                <tr>
-                    <th>ID ropa</th>
-                    <th>Modelo</th>
-                    <th>Tipo</th>
-                    <th>Marca</th>
-                    <th>Color</th>
-                    <th>Proveedor</th>
-                    <th>Precio</th>
-                    <th>Inventario total</th>
-                    <th class="no-export">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for prenda in prendas %}
-                    <tr>
-                        <td>{{ prenda.idRopa }}</td>
-                        <td>{{ prenda.modelo }}</td>
-                        <td>{{ prenda.tipo }}</td>
-                        <td>{{ prenda.marca }}</td>
-                        <td>{{ prenda.color.descripcion|default:"—" }}</td>
-                        <td>{{ prenda.proveedor.nombre }}</td>
-                        <td>{{ prenda.precio|floatformat:2 }}</td>
-                        <td>{{ prenda.inventario_total }}</td>
-                        <td><a href="/catalogo/{{ prenda.idRopa }}/inventario/">Inventario</a></td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </main>
+{% if not prendas %}
+    <p>No hay ropa registrada.</p>
+{% endif %}
 
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            $('#tablaCatalogo').DataTable({
-                dom: 'Bfrtip',
-                buttons: [{
-                    extend: 'excelHtml5',
-                    text: 'Exportar a Excel',
-                    title: 'Catalogo_de_ropa',
-                    exportOptions: { columns: ':not(.no-export)' }
-                }],
-                columnDefs: [{ targets: -1, orderable: false }],
-                language: {
-                    url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
-                }
-            });
+<table id="tablaCatalogo" class="display" style="width:100%">
+    <thead>
+        <tr>
+            <th>ID ropa</th>
+            <th>Modelo</th>
+            <th>Tipo</th>
+            <th>Marca</th>
+            <th>Color</th>
+            <th>Proveedor</th>
+            <th>Precio</th>
+            <th>Inventario total</th>
+            <th class="no-export">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for prenda in prendas %}
+            <tr>
+                <td>{{ prenda.idRopa }}</td>
+                <td>{{ prenda.modelo }}</td>
+                <td>{{ prenda.tipo }}</td>
+                <td>{{ prenda.marca }}</td>
+                <td>{{ prenda.color.descripcion|default:"—" }}</td>
+                <td>{{ prenda.proveedor.nombre }}</td>
+                <td>{{ prenda.precio|floatformat:2 }}</td>
+                <td>{{ prenda.inventario_total }}</td>
+                <td><a href="{% url 'inventario_editar' prenda.idRopa %}">Inventario</a></td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        $('#tablaCatalogo').DataTable({
+            dom: 'Bfrtip',
+            buttons: [{
+                extend: 'excelHtml5',
+                text: 'Exportar a Excel',
+                title: 'Catalogo_de_ropa',
+                exportOptions: { columns: ':not(.no-export)' }
+            }],
+            columnDefs: [{ targets: -1, orderable: false }],
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+            }
         });
-    </script>
-</body>
-</html>
+    });
+</script>
+{% endblock %}

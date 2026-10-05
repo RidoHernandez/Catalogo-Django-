@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<h2>{{ titulo }}</h2>
+<a href="{% url nuevo_url %}">Crear Nuevo</a>
+<br><br>
+<table class="display">
+    <thead>
+        <tr>
+            {% for attr in atributos %}
+                <th>{{ attr|title }}</th>
+            {% endfor %}
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for obj in objetos %}
+        <tr>
+            {% for attr in atributos %}
+                {% load mi_filtros %}
+                <td>{{ obj|get_obj_attr:attr }}</td>
+            {% endfor %}
+            <td>
+                <a href="{% url editar_url obj.pk %}">Editar</a> | 
+                <a href="{% url eliminar_url obj.pk %}">Eliminar</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
