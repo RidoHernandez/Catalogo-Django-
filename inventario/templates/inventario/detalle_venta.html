@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Detalle de Venta {{ venta.idVenta }}{% endblock %}
+
+{% block content %}
+<h2>Venta #{{ venta.idVenta }}</h2>
+<p><strong>Fecha y hora:</strong> {{ venta.fecha }}</p>
+<p><strong>Cliente:</strong> {{ venta.cliente.nombre }}</p>
+<p><strong>Total pagado:</strong> ${{ venta.total }}</p>
+
+<h3>Artículos incluidos</h3>
+<table class="display">
+    <thead>
+        <tr>
+            <th>Ropa</th>
+            <th>Color</th>
+            <th>Cantidad</th>
+            <th>Precio Unitario</th>
+            <th>Subtotal</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for detalle in detalles %}
+        <tr>
+            <td>{{ detalle.ropa.marca }} - {{ detalle.ropa.modelo }}</td>
+            <td>{{ detalle.ropa.color.descripcion|default:"-" }}</td>
+            <td>{{ detalle.cantidad }}</td>
+            <td>${{ detalle.precioUnitario }}</td>
+            <td>${{ detalle.subtotal }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<br>
+<a href="{% url 'lista_ventas' %}">Volver al Historial</a>
+{% endblock %}

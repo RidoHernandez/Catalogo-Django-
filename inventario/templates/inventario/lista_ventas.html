@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Historial de Ventas{% endblock %}
+
+{% block content %}
+<h2>Historial de Ventas</h2>
+<table class="display">
+    <thead>
+        <tr>
+            <th>ID Venta</th>
+            <th>Fecha</th>
+            <th>Cliente</th>
+            <th>Total</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for venta in ventas %}
+        <tr>
+            <td>{{ venta.idVenta }}</td>
+            <td>{{ venta.fecha }}</td>
+            <td>{{ venta.cliente.nombre }}</td>
+            <td>${{ venta.total }}</td>
+            <td><a href="{% url 'detalle_venta' venta.idVenta %}">Ver Detalle</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

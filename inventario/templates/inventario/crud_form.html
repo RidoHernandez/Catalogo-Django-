@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}{% if object %}Editar{% else %}Nuevo{% endif %}{% endblock %}
+
+{% block content %}
+<h2>{% if object %}Editar{% else %}Crear Nuevo{% endif %}</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Guardar</button>
+</form>
+<a href="javascript:history.back()">Cancelar</a>
+{% endblock %}
