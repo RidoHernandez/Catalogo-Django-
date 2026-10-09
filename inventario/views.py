@@ -180,10 +180,17 @@ def catalogo_lista(request):
 def inventario_editar(request, id_ropa):
     prenda = get_object_or_404(Ropa.objects.select_related("proveedor", "color"), idRopa=id_ropa)
     inventarios = list(Inventario.objects.filter(ropa=prenda).order_by("talla", "id"))
+    nueva_talla = ""
+    nuevas_unidades = ""
+    error_talla = None
+    error_unidades = None
 
     if request.method == "POST":
         valores = {}
         errores = {}
+        nueva_talla = request.POST.get("nueva_talla", "").strip()
+        nuevas_unidades = request.POST.get("nuevas_unidades", "").strip()
+
         for inventario in inventarios:
             campo = f"unidades_{inventario.id}"
             valor_capturado = request.POST.get(campo)
@@ -200,11 +207,45 @@ def inventario_editar(request, id_ropa):
                 continue
             valores[inventario.id] = unidades
 
+        if nueva_talla or nuevas_unidades:
+            if not nueva_talla:
+                error_talla = "Ingresa una talla para el nuevo inventario."
+            elif len(nueva_talla) > 10:
+                error_talla = "La talla no puede tener más de 10 caracteres."
+            elif any(inv.talla.casefold() == nueva_talla.casefold() for inv in inventarios):
+                error_talla = "Esta talla ya existe para la prenda."
+
+            if not nuevas_unidades:
+                error_unidades = "Ingresa las unidades de la nueva talla."
+            else:
+                try:
+                    nuevas_unidades = int(nuevas_unidades)
+                except ValueError:
+                    error_unidades = "Ingresa un número entero válido."
+                else:
+                    if nuevas_unidades < 0:
+                        error_unidades = "Las unidades deben ser mayores o iguales a cero."
+
+        if error_talla:
+            errores["nueva_talla"] = error_talla
+        if error_unidades:
+            errores["nuevas_unidades"] = error_unidades
+
+        if not inventarios and not nueva_talla and not nuevas_unidades:
+            error_talla = "Agrega al menos una talla para esta prenda."
+            errores["nueva_talla"] = error_talla
+
         if not errores:
             with transaction.atomic():
                 for inventario in inventarios:
                     inventario.unidades = valores[inventario.id]
                     inventario.save(update_fields=["unidades"])
+                if nueva_talla:
+                    Inventario.objects.create(
+                        ropa=prenda,
+                        talla=nueva_talla,
+                        unidades=nuevas_unidades,
+                    )
             messages.success(request, "Inventario actualizado correctamente.")
             return redirect("catalogo")
 
@@ -228,7 +269,20 @@ def inventario_editar(request, id_ropa):
             for inv in inventarios
         ]
 
-    return render(request, "inventario/inventario_editar.html", {"prenda": prenda, "inventarios": inventarios, "filas": filas, "errores": errores if request.method == "POST" else {}})
+    return render(
+        request,
+        "inventario/inventario_editar.html",
+        {
+            "prenda": prenda,
+            "inventarios": inventarios,
+            "filas": filas,
+            "nueva_talla": nueva_talla,
+            "nuevas_unidades": nuevas_unidades,
+            "error_talla": error_talla,
+            "error_unidades": error_unidades,
+            "errores": errores if request.method == "POST" else {},
+        },
+    )
 
 # ========================
 # Ventas (Cajero y Admin)

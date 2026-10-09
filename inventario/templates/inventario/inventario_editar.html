@@ -46,10 +46,41 @@
                 {% endfor %}
             </tbody>
         </table>
-        <button type="submit">Guardar</button>
     {% else %}
         <p>Esta prenda no tiene registros de inventario por talla.</p>
     {% endif %}
+
+    <fieldset>
+        <legend>Agregar talla</legend>
+        <label for="nueva_talla">Talla</label>
+        <input
+            id="nueva_talla"
+            name="nueva_talla"
+            type="text"
+            maxlength="10"
+            value="{{ nueva_talla }}"
+            {% if error_talla %}aria-invalid="true" aria-describedby="error-nueva-talla"{% endif %}
+        >
+        {% if error_talla %}
+            <span id="error-nueva-talla" role="alert" style="color:red;">{{ error_talla }}</span>
+        {% endif %}
+
+        <label for="nuevas_unidades">Unidades</label>
+        <input
+            id="nuevas_unidades"
+            name="nuevas_unidades"
+            type="number"
+            min="0"
+            step="1"
+            value="{{ nuevas_unidades }}"
+            {% if error_unidades %}aria-invalid="true" aria-describedby="error-nuevas-unidades"{% endif %}
+        >
+        {% if error_unidades %}
+            <span id="error-nuevas-unidades" role="alert" style="color:red;">{{ error_unidades }}</span>
+        {% endif %}
+    </fieldset>
+
+    <button type="submit">Guardar inventario</button>
 </form>
 
 <a href="/catalogo/">Cancelar</a>

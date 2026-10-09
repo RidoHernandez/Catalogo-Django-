@@ -1,5 +1,8 @@
 from django.test import TestCase
 from django.contrib.auth.models import User, Group
+from django.core.management import call_command
+from io import StringIO
+from unittest.mock import patch
 
 from .models import Inventario, Proveedor, Ropa
 
@@ -174,6 +177,85 @@ class InventarioEditarTests(TestCase):
 				self.assertEqual(self.inventario_s.unidades, 4)
 				self.assertEqual(self.inventario_m.unidades, 7)
 
+	def test_post_agrega_talla_y_unidades(self):
+		response = self.client.post(
+			self.url,
+			{
+				f"unidades_{self.inventario_s.id}": "4",
+				f"unidades_{self.inventario_m.id}": "7",
+				"nueva_talla": "XL",
+				"nuevas_unidades": "5",
+			},
+		)
+
+		self.assertRedirects(response, "/catalogo/")
+		self.assertTrue(
+			Inventario.objects.filter(ropa=self.prenda, talla="XL", unidades=5).exists()
+		)
+		response = self.client.get(self.url)
+		self.assertContains(response, "<td>XL</td>")
+		self.assertContains(response, 'value="5"')
+
+	def test_post_no_agrega_talla_duplicada_sin_importar_mayusculas(self):
+		response = self.client.post(
+			self.url,
+			{
+				f"unidades_{self.inventario_s.id}": "4",
+				f"unidades_{self.inventario_m.id}": "7",
+				"nueva_talla": "s",
+				"nuevas_unidades": "3",
+			},
+		)
+
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, "Esta talla ya existe para la prenda.")
+		self.assertEqual(Inventario.objects.filter(ropa=self.prenda).count(), 2)
+
+	def test_prenda_sin_inventario_puede_recibir_su_primera_talla(self):
+		prenda = Ropa.objects.create(
+			modelo="Primera talla",
+			descripcion="Prenda sin stock inicial",
+			tipo="Camisa",
+			marca="Marca",
+			precio="100.00",
+			proveedor=self.proveedor,
+		)
+
+		response = self.client.post(
+			f"/catalogo/{prenda.idRopa}/inventario/",
+			{"nueva_talla": "Única", "nuevas_unidades": "2"},
+			follow=True,
+		)
+
+		self.assertEqual(response.status_code, 200)
+		self.assertTrue(
+			Inventario.objects.filter(ropa=prenda, talla="Única", unidades=2).exists()
+		)
+
+	def test_cajero_puede_vender_pero_no_editar_inventario(self):
+		cajero, _ = Group.objects.get_or_create(name="Cajero")
+		self.user.groups.set([cajero])
+
+		venta_response = self.client.get("/ventas/nueva/")
+		inventario_response = self.client.get(self.url)
+
+		self.assertEqual(venta_response.status_code, 200)
+		self.assertEqual(inventario_response.status_code, 302)
+
+	def test_almacenista_no_puede_crear_ventas(self):
+		response = self.client.get("/ventas/nueva/")
+
+		self.assertEqual(response.status_code, 302)
+
+	def test_menu_muestra_rol_aunque_no_sea_el_primer_grupo(self):
+		cajero, _ = Group.objects.get_or_create(name="Cajero")
+		self.user.groups.add(cajero)
+
+		response = self.client.get(self.url)
+
+		self.assertContains(response, "Almacén:")
+		self.assertContains(response, "Punto de Venta:")
+
 	def test_get_prenda_sin_inventario_no_muestra_guardar(self):
 		prenda_sin_inventario = Ropa.objects.create(
 			modelo="Sin tallas",
@@ -195,3 +277,42 @@ class InventarioEditarTests(TestCase):
 		response = self.client.get("/catalogo/999999/inventario/")
 
 		self.assertEqual(response.status_code, 404)
+
+
+class CrearUsuariosRolesTests(TestCase):
+	@patch(
+		"inventario.management.commands.crear_usuarios_roles.getpass",
+		side_effect=[
+			"SecureCajero_239!",
+			"SecureCajero_239!",
+			"SecureAlmacen_239!",
+			"SecureAlmacen_239!",
+		],
+	)
+	def test_crea_usuarios_con_sus_grupos_y_passwords(self, mock_getpass):
+		salida = StringIO()
+		call_command("crear_usuarios_roles", stdout=salida)
+
+		cajero = User.objects.get(username="cajero")
+		almacenista = User.objects.get(username="almacenista")
+		self.assertTrue(cajero.check_password("SecureCajero_239!"))
+		self.assertTrue(almacenista.check_password("SecureAlmacen_239!"))
+		self.assertEqual(list(cajero.groups.values_list("name", flat=True)), ["Cajero"])
+		self.assertEqual(
+			list(almacenista.groups.values_list("name", flat=True)),
+			["Almacenista"],
+		)
+		self.assertIn("Usuario 'cajero' creado", salida.getvalue())
+		self.assertEqual(mock_getpass.call_count, 4)
+
+	def test_ejecucion_repetida_conserva_password_existente(self):
+		cajero = User.objects.create_user(username="cajero", password="existing-password")
+		User.objects.create_user(username="almacenista", password="existing-password")
+		salida = StringIO()
+
+		call_command("crear_usuarios_roles", stdout=salida)
+
+		cajero.refresh_from_db()
+		self.assertTrue(cajero.check_password("existing-password"))
+		self.assertEqual(list(cajero.groups.values_list("name", flat=True)), ["Cajero"])
+		self.assertIn("Usuario 'cajero' actualizado", salida.getvalue())
