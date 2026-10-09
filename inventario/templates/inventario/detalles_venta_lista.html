@@ -12,8 +12,6 @@
 <body>
     <main>
         <h1>Detalles de Venta</h1>
-        <label for="ordenarDetalles">Ordenar por</label>
-        <select id="ordenarDetalles"></select>
 
         <table id="detalles-venta" class="display">
             <thead>
@@ -49,7 +47,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/3.2.5/js/buttons.html5.min.js"></script>
     <script>
-        const tabla = new DataTable('#detalles-venta', {
+        new DataTable('#detalles-venta', {
             layout: {
                 topStart: {
                     buttons: [
@@ -63,22 +61,6 @@
             language: {
                 url: 'https://cdn.datatables.net/plug-ins/2.3.5/i18n/es-MX.json'
             }
-        });
-        const control = document.querySelector('#ordenarDetalles');
-        const columnas = tabla.columns().header().toArray();
-        control.add(new Option('Ordenar por...', ''));
-        columnas.forEach((encabezado, indice) => {
-            const nombre = encabezado.textContent.trim();
-            control.add(new Option(`${nombre} (ascendente)`, `${indice}:asc`));
-            control.add(new Option(`${nombre} (descendente)`, `${indice}:desc`));
-        });
-        control.addEventListener('change', function() {
-            if (!this.value) {
-                tabla.order([]).draw();
-                return;
-            }
-            const [columna, direccion] = this.value.split(':');
-            tabla.order([[Number(columna), direccion]]).draw();
         });
     </script>
 </body>

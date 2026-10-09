@@ -34,17 +34,18 @@
                 <a href="{% url 'proveedor_list' %}">Proveedores</a> | 
                 <a href="{% url 'ropa_list' %}">Ropa</a> | 
                 <a href="{% url 'cliente_list' %}">Clientes</a> |
-                <a href="{% url 'lista_ventas' %}">Historial Ventas</a>
+                <!-- <a href="{% url 'lista_ventas' %}">Historial Ventas</a> -->
                 <br>
             {% endif %}
-
+            
             <!-- Menú Almacenista -->
             {% if request.user|has_role_filter:'almacenista' %}
                 <strong>Almacén:</strong>
                 <a href="{% url 'catalogo' %}">Consultar Existencias</a>
                 <br>
             {% endif %}
-
+            <br></nav>
+            <nav>
             <!-- Menú Cajero -->
             {% if request.user|has_role_filter:'cajero' %}
                 <strong>Punto de Venta:</strong>
@@ -74,32 +75,6 @@
     <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
-    <script>
-        window.configurarOrdenamiento = function(tabla, selector) {
-            const control = $(selector);
-            const configuracion = tabla.settings()[0];
-            const columnas = tabla.columns().header().toArray();
-            control.empty().append(new Option('Ordenar por...', ''));
-
-            columnas.forEach((encabezado, indice) => {
-                if (!configuracion.aoColumns[indice].bSortable) {
-                    return;
-                }
-                const nombre = encabezado.textContent.trim();
-                control.append(new Option(`${nombre} (ascendente)`, `${indice}:asc`));
-                control.append(new Option(`${nombre} (descendente)`, `${indice}:desc`));
-            });
-
-            control.on('change', function() {
-                if (!this.value) {
-                    tabla.order([]).draw();
-                    return;
-                }
-                const [columna, direccion] = this.value.split(':');
-                tabla.order([[Number(columna), direccion]]).draw();
-            });
-        };
-    </script>
     {% block scripts %}{% endblock %}
 </body>
 </html>

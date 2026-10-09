@@ -15,8 +15,6 @@
             <option value="">Todos</option>
         </select>
     {% endif %}
-    <label for="ordenarTabla">Ordenar por</label>
-    <select id="ordenarTabla"></select>
 </div>
 {% load mi_filtros %}
 <table id="tablaCrud" class="display">
@@ -54,8 +52,6 @@
                 url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
             }
         });
-        window.configurarOrdenamiento(tabla, '#ordenarTabla');
-
         $('#buscarTabla').on('input', function() {
             tabla.search(this.value).draw();
         });

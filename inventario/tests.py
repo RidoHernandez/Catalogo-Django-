@@ -77,7 +77,7 @@ class CatalogoListaTests(TestCase):
 		)
 		self.assertContains(response, 'id="buscarCatalogo"')
 		self.assertContains(response, 'id="filtrarCatalogo"')
-		self.assertContains(response, 'id="ordenarCatalogo"')
+		self.assertNotContains(response, 'id="ordenarCatalogo"')
 
 	def test_tabla_de_ropa_muestra_columna_color_y_filtros(self):
 		response = self.client.get("/ropa/")
@@ -87,27 +87,27 @@ class CatalogoListaTests(TestCase):
 		self.assertContains(response, "<td>Azul</td>")
 		self.assertContains(response, 'id="buscarTabla"')
 		self.assertContains(response, 'id="filtrarTabla"')
-		self.assertContains(response, 'id="ordenarTabla"')
+		self.assertNotContains(response, 'id="ordenarTabla"')
 
-	def test_proveedores_solo_busqueda_y_ordenamiento_sin_combo_filtro(self):
+	def test_proveedores_solo_busqueda_sin_combos(self):
 		response = self.client.get("/proveedores/")
 
 		self.assertEqual(response.status_code, 200)
 		self.assertContains(response, 'id="buscarTabla"')
-		self.assertContains(response, 'id="ordenarTabla"')
 		self.assertNotContains(response, 'id="filtrarTabla"')
+		self.assertNotContains(response, 'id="ordenarTabla"')
 
-	def test_tablas_crud_tienen_filtro_y_ordenamiento(self):
-		for ruta in ("/colores/", "/clientes/"):
+	def test_tablas_crud_tienen_busqueda_y_filtro_sin_combo_ordenamiento(self):
+		for ruta in ("/clientes/",):
 			with self.subTest(ruta=ruta):
 				response = self.client.get(ruta)
 
 				self.assertEqual(response.status_code, 200)
 				self.assertContains(response, 'id="buscarTabla"')
 				self.assertContains(response, 'id="filtrarTabla"')
-				self.assertContains(response, 'id="ordenarTabla"')
+				self.assertNotContains(response, 'id="ordenarTabla"')
 
-	def test_historial_ventas_y_detalle_tienen_combo_ordenar(self):
+	def test_historial_y_detalle_usan_ordenamiento_nativo_de_datatables(self):
 		cajeros, _ = Group.objects.get_or_create(name="Cajero")
 		self.user.groups.set([cajeros])
 		venta = Venta.objects.create(
@@ -124,11 +124,12 @@ class CatalogoListaTests(TestCase):
 			subtotal="250.00",
 		)
 
-		self.assertContains(self.client.get("/ventas/"), 'id="ordenarVentas"')
-		self.assertContains(
+		for response in (
+			self.client.get("/ventas/"),
 			self.client.get(f"/ventas/{venta.idVenta}/"),
-			'id="ordenarDetalleVenta"',
-		)
+		):
+			self.assertEqual(response.status_code, 200)
+			self.assertNotContains(response, "Ordenar por")
 
 	def test_raiz_sigue_mostrando_proveedores(self):
 		response = self.client.get("/", follow=True)

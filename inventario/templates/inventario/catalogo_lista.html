@@ -16,8 +16,6 @@
     <select id="filtrarCatalogo">
         <option value="">Todos los tipos</option>
     </select>
-    <label for="ordenarCatalogo">Ordenar por</label>
-    <select id="ordenarCatalogo"></select>
 </div>
 
 <table id="tablaCatalogo" class="display" style="width:100%">
@@ -70,7 +68,6 @@
         });
         const indexFiltro = parseInt('{{ indice_filtro|default:0 }}', 10);
         const columnaTipo = tabla.column(indexFiltro);
-        window.configurarOrdenamiento(tabla, '#ordenarCatalogo');
         const tipos = [...new Set(
             columnaTipo.data().toArray().map(valor => $('<div>').html(valor).text().trim())
         )].filter(Boolean).sort((a, b) => a.localeCompare(b, 'es'));

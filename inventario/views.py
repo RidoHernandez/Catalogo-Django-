@@ -77,8 +77,7 @@ class ColorListView(AdminRequiredMixin, ListView):
         ctx['eliminar_url'] = 'color_delete'
         ctx['atributos'] = ['idColor', 'descripcion']
         ctx['indice_filtro'] = 1
-        ctx['etiqueta_filtro'] = 'Color'
-        ctx['mostrar_filtro'] = True
+        ctx['mostrar_filtro'] = False
         return ctx
 
 class ColorCreateView(AdminRequiredMixin, CreateView):
@@ -219,7 +218,7 @@ def catalogo_lista(request):
             "indice_filtro": 2,
             "etiqueta_filtro": "Tipo de prenda",
             "mostrar_filtro": True,
-        },
+            },
     )
 
 @login_required
