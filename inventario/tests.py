@@ -78,6 +78,7 @@ class CatalogoListaTests(TestCase):
 		self.assertContains(response, 'id="buscarCatalogo"')
 		self.assertContains(response, 'id="filtrarCatalogo"')
 		self.assertNotContains(response, 'id="ordenarCatalogo"')
+		self.assertContains(response, "Mostrando del _START_ al _END_ de _TOTAL_ registros")
 
 	def test_tabla_de_ropa_muestra_columna_color_y_filtros(self):
 		response = self.client.get("/ropa/")
@@ -88,6 +89,7 @@ class CatalogoListaTests(TestCase):
 		self.assertContains(response, 'id="buscarTabla"')
 		self.assertContains(response, 'id="filtrarTabla"')
 		self.assertNotContains(response, 'id="ordenarTabla"')
+		self.assertContains(response, "Mostrando del _START_ al _END_ de _TOTAL_ registros")
 
 	def test_proveedores_solo_busqueda_sin_combos(self):
 		response = self.client.get("/proveedores/")

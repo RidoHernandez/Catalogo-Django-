@@ -89,7 +89,7 @@ class ColorCreateView(AdminRequiredMixin, CreateView):
 class ColorUpdateView(AdminRequiredMixin, UpdateView):
     model = Color
     fields = '__all__'
-    template_name = 'inventario/crud_form.html'
+    template_name = 'inventario/crud_form.  tml'
     success_url = reverse_lazy('color_list')
 
 class ColorDeleteView(AdminRequiredMixin, DeleteView):
