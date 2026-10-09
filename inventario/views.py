@@ -333,6 +333,7 @@ def inventario_editar(request, id_ropa):
 # ========================
 # Ventas (Cajero y Admin)
 # ========================
+#Comentario de cambio
 
 @login_required
 @user_passes_test(is_cajero_or_admin)
