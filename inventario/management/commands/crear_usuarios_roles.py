@@ -6,19 +6,22 @@ from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 
+from inventario.models import PerfilUsuario
+
 
 class Command(BaseCommand):
-    help = "Crea los usuarios cajero y almacenista con sus grupos de acceso."
+    help = "Crea usuarios para los roles administrador, almacenista y cajero."
 
     usuarios_roles = (
-        ("cajero", "Cajero"),
-        ("almacenista", "Almacenista"),
+        ("admin", PerfilUsuario.Rol.ADMIN, "Administrador"),
+        ("almacenista", PerfilUsuario.Rol.ALMACENISTA, "Almacenista"),
+        ("cajero", PerfilUsuario.Rol.CAJERO, "Cajero"),
     )
 
     def handle(self, *_args, **_options):
         User = get_user_model()
 
-        for username, nombre_grupo in self.usuarios_roles:
+        for username, rol, nombre_grupo in self.usuarios_roles:
             grupo, _ = Group.objects.get_or_create(name=nombre_grupo)
             usuario, creado = User.objects.get_or_create(
                 username=username,
@@ -29,6 +32,10 @@ class Command(BaseCommand):
                 usuario.save(update_fields=["password"])
 
             usuario.groups.set([grupo])
+            PerfilUsuario.objects.update_or_create(
+                usuario=usuario,
+                defaults={"rol": rol},
+            )
             estado = "creado" if creado else "actualizado"
             self.stdout.write(
                 self.style.SUCCESS(

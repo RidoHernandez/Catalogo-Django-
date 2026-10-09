@@ -2,7 +2,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.ProveedorListView.as_view(), name='inicio'),
+    path('', views.inicio, name='inicio'),
     # Administrador CRUDs
     path('colores/', views.ColorListView.as_view(), name='color_list'),
     path('colores/nuevo/', views.ColorCreateView.as_view(), name='color_create'),

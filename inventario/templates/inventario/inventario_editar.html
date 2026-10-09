@@ -53,14 +53,20 @@
     <fieldset>
         <legend>Agregar talla</legend>
         <label for="nueva_talla">Talla</label>
-        <input
-            id="nueva_talla"
-            name="nueva_talla"
-            type="text"
-            maxlength="10"
-            value="{{ nueva_talla }}"
-            {% if error_talla %}aria-invalid="true" aria-describedby="error-nueva-talla"{% endif %}
-        >
+            <select
+        id="nueva_talla"
+        name="nueva_talla"
+        {% if error_talla %}aria-invalid="true" aria-describedby="error-nueva-talla"{% endif %}
+    >
+        <option value="">Selecciona una talla</option>
+        <option value="XXS" {% if nueva_talla == 'XXS' %}selected{% endif %}>XXS</option>
+        <option value="XS" {% if nueva_talla == 'XS' %}selected{% endif %}>XS</option>
+        <option value="S" {% if nueva_talla == 'S' %}selected{% endif %}>S</option>
+        <option value="M" {% if nueva_talla == 'M' %}selected{% endif %}>M</option>
+        <option value="L" {% if nueva_talla == 'L' %}selected{% endif %}>L</option>
+        <option value="XL" {% if nueva_talla == 'XL' %}selected{% endif %}>XL</option>
+        <option value="XXL" {% if nueva_talla == 'XXL' %}selected{% endif %}>XXL</option>
+    </select>
         {% if error_talla %}
             <span id="error-nueva-talla" role="alert" style="color:red;">{{ error_talla }}</span>
         {% endif %}

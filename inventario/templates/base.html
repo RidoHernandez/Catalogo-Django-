@@ -28,7 +28,7 @@
         {% if user.is_authenticated %}
         <nav>
             <!-- Menú Administrativo -->
-            {% if request.user|has_group:'Administrador' or request.user.is_superuser %}
+            {% if request.user|has_role_filter:'admin' %}
                 <strong>Administración:</strong>
                 <a href="{% url 'color_list' %}">Colores</a> | 
                 <a href="{% url 'proveedor_list' %}">Proveedores</a> | 
@@ -39,14 +39,14 @@
             {% endif %}
 
             <!-- Menú Almacenista -->
-            {% if request.user|has_group:'Almacenista' or request.user.is_superuser %}
+            {% if request.user|has_role_filter:'almacenista' %}
                 <strong>Almacén:</strong>
                 <a href="{% url 'catalogo' %}">Consultar Existencias</a>
                 <br>
             {% endif %}
 
             <!-- Menú Cajero -->
-            {% if request.user|has_group:'Cajero' or request.user.is_superuser %}
+            {% if request.user|has_role_filter:'cajero' %}
                 <strong>Punto de Venta:</strong>
                 <a href="{% url 'nueva_venta' %}">Nueva Venta</a> |
                 <a href="{% url 'lista_ventas' %}">Historial Ventas</a>

@@ -2,26 +2,29 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.views import LoginView
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.db import transaction
 from django.db.models import Sum
 from django.db.models.functions import Coalesce
 from datetime import date
+from django.http import HttpResponseForbidden
 from .models import Color, Proveedor, Ropa, Cliente, Inventario, Venta, DetalleVenta
+from .permissions import has_role
 
 # Funciones de validación de roles
 def is_admin(user):
-    return user.is_superuser or user.groups.filter(name='Administrador').exists()
+    return has_role(user, "admin")
 
 def is_almacenista(user):
-    return user.is_superuser or user.groups.filter(name='Almacenista').exists()
+    return has_role(user, "almacenista")
 
 def is_cajero(user):
-    return user.is_superuser or user.groups.filter(name='Cajero').exists()
+    return has_role(user, "cajero")
 
 def is_cajero_or_admin(user):
-    return user.is_superuser or user.groups.filter(name__in=['Cajero', 'Administrador']).exists()
+    return is_cajero(user) or is_admin(user)
 
 # Mixins de roles
 class AdminRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
@@ -32,9 +35,30 @@ class CajeroRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
     def test_func(self):
         return is_cajero(self.request.user)
 
+
+class RoleAwareLoginView(LoginView):
+    def get_success_url(self):
+        redirect_to = self.get_redirect_url()
+        if redirect_to:
+            return redirect_to
+        if is_admin(self.request.user):
+            return reverse_lazy("proveedor_list")
+        if is_almacenista(self.request.user):
+            return reverse_lazy("catalogo")
+        if is_cajero(self.request.user):
+            return reverse_lazy("nueva_venta")
+        return super().get_success_url()
+
+
 @login_required
 def inicio(request):
-    return render(request, 'base.html')
+    if is_admin(request.user):
+        return redirect("proveedor_list")
+    if is_almacenista(request.user):
+        return redirect("catalogo")
+    if is_cajero(request.user):
+        return redirect("nueva_venta")
+    return HttpResponseForbidden("Tu cuenta todavía no tiene un rol asignado.")
 
 # ========================
 # CRUDs (Administrador)

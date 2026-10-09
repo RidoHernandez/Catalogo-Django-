@@ -1,10 +1,13 @@
 from django.test import TestCase
-from django.contrib.auth.models import User, Group
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.core.management import call_command
 from io import StringIO
 from unittest.mock import patch
 
-from .models import Inventario, Proveedor, Ropa
+from .models import Inventario, PerfilUsuario, Proveedor, Ropa
+
+User = get_user_model()
 
 
 class CatalogoListaTests(TestCase):
@@ -61,7 +64,7 @@ class CatalogoListaTests(TestCase):
 		)
 
 	def test_raiz_sigue_mostrando_proveedores(self):
-		response = self.client.get("/")
+		response = self.client.get("/", follow=True)
 
 		self.assertEqual(response.status_code, 200)
 		self.assertContains(response, "Proveedor de prueba")
@@ -283,29 +286,35 @@ class CrearUsuariosRolesTests(TestCase):
 	@patch(
 		"inventario.management.commands.crear_usuarios_roles.getpass",
 		side_effect=[
-			"SecureCajero_239!",
-			"SecureCajero_239!",
+			"SecureAdmin_239!",
+			"SecureAdmin_239!",
 			"SecureAlmacen_239!",
 			"SecureAlmacen_239!",
+			"SecureCajero_239!",
+			"SecureCajero_239!",
 		],
 	)
 	def test_crea_usuarios_con_sus_grupos_y_passwords(self, mock_getpass):
 		salida = StringIO()
 		call_command("crear_usuarios_roles", stdout=salida)
 
+		administrador = User.objects.get(username="admin")
 		cajero = User.objects.get(username="cajero")
 		almacenista = User.objects.get(username="almacenista")
+		self.assertTrue(administrador.check_password("SecureAdmin_239!"))
 		self.assertTrue(cajero.check_password("SecureCajero_239!"))
 		self.assertTrue(almacenista.check_password("SecureAlmacen_239!"))
+		self.assertEqual(administrador.perfil.rol, PerfilUsuario.Rol.ADMIN)
 		self.assertEqual(list(cajero.groups.values_list("name", flat=True)), ["Cajero"])
 		self.assertEqual(
 			list(almacenista.groups.values_list("name", flat=True)),
 			["Almacenista"],
 		)
 		self.assertIn("Usuario 'cajero' creado", salida.getvalue())
-		self.assertEqual(mock_getpass.call_count, 4)
+		self.assertEqual(mock_getpass.call_count, 6)
 
 	def test_ejecucion_repetida_conserva_password_existente(self):
+		User.objects.create_user(username="admin", password="existing-password")
 		cajero = User.objects.create_user(username="cajero", password="existing-password")
 		User.objects.create_user(username="almacenista", password="existing-password")
 		salida = StringIO()
@@ -315,4 +324,46 @@ class CrearUsuariosRolesTests(TestCase):
 		cajero.refresh_from_db()
 		self.assertTrue(cajero.check_password("existing-password"))
 		self.assertEqual(list(cajero.groups.values_list("name", flat=True)), ["Cajero"])
+		self.assertEqual(cajero.perfil.rol, PerfilUsuario.Rol.CAJERO)
 		self.assertIn("Usuario 'cajero' actualizado", salida.getvalue())
+
+
+class PerfilUsuarioTests(TestCase):
+	def setUp(self):
+		self.usuario = User.objects.create_user(
+			username="usuario_rol",
+			password="StrongPassword_239!",
+			first_name="Usuario",
+			last_name="Prueba",
+			email="usuario@example.com",
+		)
+
+	def test_login_django_acepta_cuenta_con_perfil(self):
+		PerfilUsuario.objects.create(
+			usuario=self.usuario,
+			rol=PerfilUsuario.Rol.CAJERO,
+		)
+
+		response = self.client.post(
+			"/accounts/login/",
+			{"username": "usuario_rol", "password": "StrongPassword_239!"},
+		)
+
+		self.assertRedirects(response, "/ventas/nueva/")
+		self.assertEqual(int(self.client.session["_auth_user_id"]), self.usuario.pk)
+
+	def test_rol_del_perfil_gobierna_accesos_y_menu(self):
+		PerfilUsuario.objects.create(
+			usuario=self.usuario,
+			rol=PerfilUsuario.Rol.CAJERO,
+		)
+		almacenistas, _ = Group.objects.get_or_create(name="Almacenista")
+		self.usuario.groups.add(almacenistas)
+		self.client.login(username="usuario_rol", password="StrongPassword_239!")
+
+		response = self.client.get("/", follow=True)
+
+		self.assertContains(response, "Punto de Venta:")
+		self.assertNotContains(response, "Almacén:")
+		self.assertEqual(self.client.get("/ventas/nueva/").status_code, 200)
+		self.assertEqual(self.client.get("/catalogo/").status_code, 302)

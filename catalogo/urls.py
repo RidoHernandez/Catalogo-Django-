@@ -16,9 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from inventario.views import RoleAwareLoginView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('accounts/login/', RoleAwareLoginView.as_view(), name='login'),
     path('accounts/', include('django.contrib.auth.urls')),
     path('', include('inventario.urls')),
 ]
