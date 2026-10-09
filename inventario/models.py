@@ -63,6 +63,7 @@ class Venta(models.Model):
 
 class DetalleVenta(models.Model):
     cantidad = models.IntegerField()
+    talla = models.CharField(max_length=10, blank=True)
     precioUnitario = models.DecimalField(max_digits=10, decimal_places=2)
     subtotal = models.DecimalField(max_digits=12, decimal_places=2)
     # Relaciones de composición y asociación

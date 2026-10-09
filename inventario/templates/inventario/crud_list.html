@@ -6,7 +6,20 @@
 <h2>{{ titulo }}</h2>
 <a href="{% url nuevo_url %}">Crear Nuevo</a>
 <br><br>
-<table class="display">
+<div class="filtros-tabla">
+    <label for="buscarTabla">Buscar {{ titulo|lower }}</label>
+    <input type="search" id="buscarTabla" placeholder="Escribe para buscar...">
+    {% if mostrar_filtro %}
+        <label for="filtrarTabla">Filtrar por {{ etiqueta_filtro|lower }}</label>
+        <select id="filtrarTabla">
+            <option value="">Todos</option>
+        </select>
+    {% endif %}
+    <label for="ordenarTabla">Ordenar por</label>
+    <select id="ordenarTabla"></select>
+</div>
+{% load mi_filtros %}
+<table id="tablaCrud" class="display">
     <thead>
         <tr>
             {% for attr in atributos %}
@@ -19,7 +32,6 @@
         {% for obj in objetos %}
         <tr>
             {% for attr in atributos %}
-                {% load mi_filtros %}
                 <td>{{ obj|get_obj_attr:attr }}</td>
             {% endfor %}
             <td>
@@ -30,4 +42,39 @@
         {% endfor %}
     </tbody>
 </table>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        const tabla = $('#tablaCrud').DataTable({
+            dom: 'rtip',
+            columnDefs: [{ targets: -1, orderable: false }],
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+            }
+        });
+        window.configurarOrdenamiento(tabla, '#ordenarTabla');
+
+        $('#buscarTabla').on('input', function() {
+            tabla.search(this.value).draw();
+        });
+        {% if mostrar_filtro %}
+            const columnaFiltro = tabla.column({{ indice_filtro }});
+            const opciones = [...new Set(
+                columnaFiltro.data().toArray().map(valor => $('<div>').html(valor).text().trim())
+            )].filter(Boolean).sort((a, b) => a.localeCompare(b, 'es'));
+
+            opciones.forEach(valor => {
+                $('#filtrarTabla').append(new Option(valor, valor));
+            });
+            $('#filtrarTabla').on('change', function() {
+                const filtro = this.value
+                    ? '^' + this.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$'
+                    : '';
+                columnaFiltro.search(filtro, true, false).draw();
+            });
+        {% endif %}
+    });
+</script>
 {% endblock %}

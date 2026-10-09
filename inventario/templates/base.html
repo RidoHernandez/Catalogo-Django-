@@ -74,6 +74,32 @@
     <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+    <script>
+        window.configurarOrdenamiento = function(tabla, selector) {
+            const control = $(selector);
+            const configuracion = tabla.settings()[0];
+            const columnas = tabla.columns().header().toArray();
+            control.empty().append(new Option('Ordenar por...', ''));
+
+            columnas.forEach((encabezado, indice) => {
+                if (!configuracion.aoColumns[indice].bSortable) {
+                    return;
+                }
+                const nombre = encabezado.textContent.trim();
+                control.append(new Option(`${nombre} (ascendente)`, `${indice}:asc`));
+                control.append(new Option(`${nombre} (descendente)`, `${indice}:desc`));
+            });
+
+            control.on('change', function() {
+                if (!this.value) {
+                    tabla.order([]).draw();
+                    return;
+                }
+                const [columna, direccion] = this.value.split(':');
+                tabla.order([[Number(columna), direccion]]).draw();
+            });
+        };
+    </script>
     {% block scripts %}{% endblock %}
 </body>
 </html>

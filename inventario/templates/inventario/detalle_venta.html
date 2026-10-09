@@ -9,10 +9,13 @@
 <p><strong>Total pagado:</strong> ${{ venta.total }}</p>
 
 <h3>Artículos incluidos</h3>
-<table class="display">
+<label for="ordenarDetalleVenta">Ordenar por</label>
+<select id="ordenarDetalleVenta"></select>
+<table id="tablaDetalleVenta" class="display">
     <thead>
         <tr>
             <th>Ropa</th>
+            <th>Talla</th>
             <th>Color</th>
             <th>Cantidad</th>
             <th>Precio Unitario</th>
@@ -23,6 +26,7 @@
         {% for detalle in detalles %}
         <tr>
             <td>{{ detalle.ropa.marca }} - {{ detalle.ropa.modelo }}</td>
+            <td>{{ detalle.talla|default:"-" }}</td>
             <td>{{ detalle.ropa.color.descripcion|default:"-" }}</td>
             <td>{{ detalle.cantidad }}</td>
             <td>${{ detalle.precioUnitario }}</td>
@@ -33,4 +37,17 @@
 </table>
 <br>
 <a href="{% url 'lista_ventas' %}">Volver al Historial</a>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        const tabla = $('#tablaDetalleVenta').DataTable({
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+            }
+        });
+        window.configurarOrdenamiento(tabla, '#ordenarDetalleVenta');
+    });
+</script>
 {% endblock %}

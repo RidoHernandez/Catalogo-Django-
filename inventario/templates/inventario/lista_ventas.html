@@ -4,7 +4,9 @@
 
 {% block content %}
 <h2>Historial de Ventas</h2>
-<table class="display">
+<label for="ordenarVentas">Ordenar por</label>
+<select id="ordenarVentas"></select>
+<table id="tablaVentas" class="display">
     <thead>
         <tr>
             <th>ID Venta</th>
@@ -26,4 +28,18 @@
         {% endfor %}
     </tbody>
 </table>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        const tabla = $('#tablaVentas').DataTable({
+            columnDefs: [{ targets: -1, orderable: false }],
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+            }
+        });
+        window.configurarOrdenamiento(tabla, '#ordenarVentas');
+    });
+</script>
 {% endblock %}

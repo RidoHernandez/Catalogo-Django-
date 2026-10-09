@@ -15,131 +15,204 @@
             </option>
         {% endfor %}
     </select>
-    <br><br>
 
-    <h3>Añadir Producto</h3>
+    <h3>Añadir producto</h3>
+    <label for="productoSelect">Producto</label>
     <select id="productoSelect">
         <option value="">Seleccione un producto</option>
         {% for ropa in ropas %}
-            <option value="{{ ropa.pk }}" data-precio="{{ ropa.precio|stringformat:'f' }}" data-stock="{{ ropa.total_unidades }}">
-                {{ ropa.marca }} - {{ ropa.modelo }} (Stock: {{ ropa.total_unidades }}) - ${{ ropa.precio }}
-            </option>
+            <option value="{{ ropa.idRopa }}">{{ ropa.marca }} - {{ ropa.modelo }}</option>
         {% endfor %}
     </select>
-    <input type="number" id="cantidadInput" placeholder="Cantidad" min="1">
-    <button type="button" id="btnAgregar">Agregar a la venta</button>
 
-    <br><br>
+    <section id="productoSeleccionado" aria-live="polite" hidden>
+        <p>Producto: <strong id="productoNombre"></strong></p>
+        <p>Precio: $<span id="productoPrecio"></span></p>
+        <p>Stock total: <span id="productoStockTotal"></span></p>
+        <label for="tallaSelect">Talla</label>
+        <select id="tallaSelect" disabled>
+            <option value="">Seleccione primero un producto</option>
+        </select>
+        <p>Color: <output id="productoColor">—</output></p>
+        <label for="cantidadInput">Cantidad</label>
+        <input type="number" id="cantidadInput" min="1" step="1" disabled>
+    </section>
+    <button type="button" id="btnAgregar" disabled>Agregar a la venta</button>
+
     <h3>Carrito</h3>
     <table border="1" id="carritoTabla">
         <thead>
             <tr>
                 <th>Producto</th>
+                <th>Talla</th>
+                <th>Color</th>
                 <th>Cantidad</th>
-                <th>Precio Unit.</th>
+                <th>Precio unitario</th>
                 <th>Subtotal</th>
                 <th>Acción</th>
             </tr>
         </thead>
-        <tbody>
-            <!-- Aquí se añaden los productos con JS -->
-        </tbody>
+        <tbody></tbody>
     </table>
-    <br>
     <p><strong>Total: $<span id="totalMonto">0.00</span></strong></p>
-
     <button type="submit" id="btnCobrar">Cobrar</button>
 </form>
-
+{{ productos_json|json_script:"productos-data" }}
 {% endblock %}
 
 {% block scripts %}
 <script>
+    const productos = JSON.parse(document.getElementById('productos-data').textContent);
+    const productoSelect = document.getElementById('productoSelect');
+    const tallaSelect = document.getElementById('tallaSelect');
+    const cantidadInput = document.getElementById('cantidadInput');
+    const btnAgregar = document.getElementById('btnAgregar');
+    const datosProducto = document.getElementById('productoSeleccionado');
     let carrito = [];
 
-    document.getElementById('btnAgregar').addEventListener('click', function() {
-        let select = document.getElementById('productoSelect');
-        let option = select.options[select.selectedIndex];
-        let cantidad = parseInt(document.getElementById('cantidadInput').value);
-
-        if (!option.value) {
-            alert('Seleccione un producto');
-            return;
+    productoSelect.addEventListener('change', mostrarProducto);
+    tallaSelect.addEventListener('change', actualizarTalla);
+    btnAgregar.addEventListener('click', agregarProducto);
+    document.getElementById('ventaForm').addEventListener('submit', function(event) {
+        if (carrito.length === 0) {
+            event.preventDefault();
+            alert('Debe agregar al menos un producto a la venta.');
         }
-        if (isNaN(cantidad) || cantidad <= 0) {
-            alert('Ingrese una cantidad válida mayor a 0');
-            return;
-        }
-
-        let p_id = option.value;
-        let p_nombre = option.text.split(' (Stock')[0];
-        let p_precio = parseFloat(option.getAttribute('data-precio').replace(',', '.'));
-        let p_stock = parseInt(option.getAttribute('data-stock'));
-
-        // Verificar duplicados
-        let existente = carrito.find(item => item.id === p_id);
-        if (existente) {
-            alert('El producto ya está en el carrito. Modifique o elimine la línea existente si desea otra cantidad, o este sistema no permite duplicidad en diferentes líneas.');
-            return;
-        }
-
-        if (cantidad > p_stock) {
-            alert('Stock insuficiente. Solicitado: ' + cantidad + ', Disponible: ' + p_stock);
-            return;
-        }
-
-        let subtotal = p_precio * cantidad;
-
-        carrito.push({
-            id: p_id,
-            nombre: p_nombre,
-            cantidad: cantidad,
-            precio: p_precio,
-            subtotal: subtotal
-        });
-
-        actualizarTabla();
-        document.getElementById('cantidadInput').value = '';
-        select.selectedIndex = 0;
     });
 
-    function eliminarItem(id) {
-        carrito = carrito.filter(item => item.id !== id);
+    function mostrarProducto() {
+        const producto = productos[productoSelect.value];
+        tallaSelect.replaceChildren();
+
+        if (!producto) {
+            datosProducto.hidden = true;
+            tallaSelect.disabled = true;
+            cantidadInput.disabled = true;
+            btnAgregar.disabled = true;
+            tallaSelect.add(new Option('Seleccione primero un producto', ''));
+            return;
+        }
+
+        datosProducto.hidden = false;
+        document.getElementById('productoNombre').textContent = producto.nombre;
+        document.getElementById('productoPrecio').textContent = producto.precio;
+        document.getElementById('productoStockTotal').textContent = producto.stock_total;
+        document.getElementById('productoColor').textContent = producto.color;
+        tallaSelect.add(new Option('Seleccione una talla', ''));
+        producto.tallas.forEach(talla => {
+            tallaSelect.add(new Option(
+                `${talla.nombre} (disponibles: ${talla.stock})`,
+                String(talla.id)
+            ));
+        });
+        tallaSelect.disabled = producto.tallas.length === 0;
+        cantidadInput.disabled = true;
+        cantidadInput.value = '';
+        btnAgregar.disabled = true;
+    }
+
+    function actualizarTalla() {
+        const producto = productos[productoSelect.value];
+        const talla = producto && producto.tallas.find(
+            item => String(item.id) === tallaSelect.value
+        );
+        const existente = talla && carrito.find(item => item.inventarioId === talla.id);
+        cantidadInput.value = '';
+        cantidadInput.disabled = !talla;
+        cantidadInput.max = talla ? talla.stock - (existente ? existente.cantidad : 0) : '';
+        document.getElementById('productoColor').textContent = producto ? producto.color : '—';
+        btnAgregar.disabled = !talla;
+    }
+
+    function agregarProducto() {
+        const producto = productos[productoSelect.value];
+        const talla = producto && producto.tallas.find(
+            item => String(item.id) === tallaSelect.value
+        );
+        const cantidad = Number(cantidadInput.value);
+        if (!producto || !talla || !Number.isInteger(cantidad) || cantidad < 1) {
+            alert('Selecciona un producto, una talla y una cantidad entera válida.');
+            return;
+        }
+        const existente = carrito.find(item => item.inventarioId === talla.id);
+        const cantidadAcumulada = (existente ? existente.cantidad : 0) + cantidad;
+        if (cantidadAcumulada > talla.stock) {
+            alert(
+                `Stock insuficiente para la talla ${talla.nombre}. `
+                + `En el carrito: ${existente ? existente.cantidad : 0}, `
+                + `disponible: ${talla.stock}.`
+            );
+            return;
+        }
+
+        if (existente) {
+            existente.cantidad = cantidadAcumulada;
+        } else {
+            carrito.push({
+                productoId: productoSelect.value,
+                inventarioId: talla.id,
+                nombre: producto.nombre,
+                talla: talla.nombre,
+                color: producto.color,
+                cantidad: cantidad,
+                precio: Number(producto.precio)
+            });
+        }
+        actualizarTabla();
+        tallaSelect.value = '';
+        actualizarTalla();
+    }
+
+    function eliminarItem(inventarioId) {
+        carrito = carrito.filter(item => item.inventarioId !== inventarioId);
         actualizarTabla();
     }
 
     function actualizarTabla() {
-        let tbody = document.querySelector('#carritoTabla tbody');
-        tbody.innerHTML = '';
+        const tbody = document.querySelector('#carritoTabla tbody');
+        tbody.replaceChildren();
         let total = 0;
 
         carrito.forEach(item => {
-            total += item.subtotal;
-            let tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>
-                    <input type="hidden" name="producto[]" value="${item.id}">
-                    ${item.nombre}
-                </td>
-                <td>
-                    <input type="hidden" name="cantidad[]" value="${item.cantidad}">
-                    ${item.cantidad}
-                </td>
-                <td>$${item.precio.toFixed(2)}</td>
-                <td>$${item.subtotal.toFixed(2)}</td>
-                <td><button type="button" onclick="eliminarItem('${item.id}')">Eliminar</button></td>
-            `;
-            tbody.appendChild(tr);
-        });
+            const subtotal = item.precio * item.cantidad;
+            total += subtotal;
+            const fila = document.createElement('tr');
+            const valores = [
+                item.nombre,
+                item.talla,
+                item.color,
+                String(item.cantidad),
+                `$${item.precio.toFixed(2)}`,
+                `$${subtotal.toFixed(2)}`
+            ];
+            valores.forEach(valor => {
+                const celda = document.createElement('td');
+                celda.textContent = valor;
+                fila.appendChild(celda);
+            });
 
+            const accion = document.createElement('td');
+            const quitar = document.createElement('button');
+            quitar.type = 'button';
+            quitar.textContent = 'Eliminar';
+            quitar.addEventListener('click', () => eliminarItem(item.inventarioId));
+            accion.appendChild(quitar);
+            fila.appendChild(accion);
+
+            [
+                ['producto[]', item.productoId],
+                ['inventario[]', String(item.inventarioId)],
+                ['cantidad[]', String(item.cantidad)]
+            ].forEach(([nombre, valor]) => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = nombre;
+                input.value = valor;
+                fila.appendChild(input);
+            });
+            tbody.appendChild(fila);
+        });
         document.getElementById('totalMonto').textContent = total.toFixed(2);
     }
-    
-    document.getElementById('ventaForm').addEventListener('submit', function(e) {
-        if (carrito.length === 0) {
-            e.preventDefault();
-            alert('Debe agregar al menos un producto a la venta.');
-        }
-    });
 </script>
 {% endblock %}

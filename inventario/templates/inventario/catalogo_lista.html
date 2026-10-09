@@ -9,6 +9,17 @@
     <p>No hay ropa registrada.</p>
 {% endif %}
 
+<div class="filtros-tabla">
+    <label for="buscarCatalogo">Buscar existencias</label>
+    <input type="search" id="buscarCatalogo" placeholder="Modelo, marca, color o proveedor...">
+    <label for="filtrarCatalogo">Filtrar por {{ etiqueta_filtro|lower }}</label>
+    <select id="filtrarCatalogo">
+        <option value="">Todos los tipos</option>
+    </select>
+    <label for="ordenarCatalogo">Ordenar por</label>
+    <select id="ordenarCatalogo"></select>
+</div>
+
 <table id="tablaCatalogo" class="display" style="width:100%">
     <thead>
         <tr>
@@ -44,8 +55,8 @@
 {% block scripts %}
 <script>
     $(document).ready(function() {
-        $('#tablaCatalogo').DataTable({
-            dom: 'Bfrtip',
+        const tabla = $('#tablaCatalogo').DataTable({
+            dom: 'Brtip',
             buttons: [{
                 extend: 'excelHtml5',
                 text: 'Exportar a Excel',
@@ -56,6 +67,25 @@
             language: {
                 url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
             }
+        });
+        const indexFiltro = parseInt('{{ indice_filtro|default:0 }}', 10);
+        const columnaTipo = tabla.column(indexFiltro);
+        window.configurarOrdenamiento(tabla, '#ordenarCatalogo');
+        const tipos = [...new Set(
+            columnaTipo.data().toArray().map(valor => $('<div>').html(valor).text().trim())
+        )].filter(Boolean).sort((a, b) => a.localeCompare(b, 'es'));
+
+        tipos.forEach(tipo => {
+            $('#filtrarCatalogo').append(new Option(tipo, tipo));
+        });
+        $('#buscarCatalogo').on('input', function() {
+            tabla.search(this.value).draw();
+        });
+        $('#filtrarCatalogo').on('change', function() {
+            const filtro = this.value
+                ? '^' + this.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$'
+                : '';
+            columnaTipo.search(filtro, true, false).draw();
         });
     });
 </script>
