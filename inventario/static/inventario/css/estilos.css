@@ -1,0 +1,351 @@
+:root {
+    color-scheme: light;
+    --blue: #0d6efd;
+    --blue-dark: #084298;
+    --blue-light: #e7f1ff;
+    --blue-border: #b6d4fe;
+    --text: #212529;
+    --muted: #6c757d;
+    --border: #dee2e6;
+    --surface: #fff;
+    --danger: #dc3545;
+    --danger-dark: #b02a37;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 24px;
+    background: var(--surface);
+    color: var(--text);
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+header,
+main {
+    width: min(100%, 1200px);
+    margin-right: auto;
+    margin-left: auto;
+    padding: 20px;
+    background: var(--surface);
+}
+
+header {
+    border-bottom: 2px solid var(--blue-border);
+}
+
+main {
+    margin-top: 18px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow-x: auto;
+}
+
+h1,
+h2,
+h3 {
+    margin-top: 0;
+    color: var(--text);
+    line-height: 1.25;
+}
+
+h1 {
+    font-size: 1.8rem;
+}
+
+h2 {
+    margin-bottom: 1rem;
+    font-size: 1.6rem;
+}
+
+h3 {
+    margin-top: 1.5rem;
+    font-size: 1.2rem;
+}
+
+p {
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+
+nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+nav strong {
+    color: var(--blue-dark);
+}
+
+a {
+    color: var(--blue);
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--blue-dark);
+    text-decoration: underline;
+}
+
+nav a {
+    display: inline-block;
+    padding: 6px 10px;
+    border: 1px solid var(--blue-border);
+    border-radius: 6px;
+    background: var(--blue-light);
+}
+
+button,
+input[type="submit"],
+input[type="button"],
+.dt-button,
+.dt-buttons button {
+    display: inline-block;
+    padding: 8px 14px;
+    border: 1px solid var(--blue);
+    border-radius: 6px;
+    background: var(--blue);
+    color: #fff;
+    font: inherit;
+    line-height: 1.4;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+button:hover,
+input[type="submit"]:hover,
+input[type="button"]:hover,
+.dt-button:hover,
+.dt-buttons button:hover {
+    border-color: var(--blue-dark);
+    background: var(--blue-dark);
+    color: #fff;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+    outline: 3px solid var(--blue-border);
+    outline-offset: 2px;
+}
+
+form {
+    margin-bottom: 1rem;
+}
+
+form p {
+    margin-bottom: 1rem;
+}
+
+label {
+    display: inline-block;
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+input:not([type="hidden"]),
+select,
+textarea {
+    max-width: 100%;
+    min-height: 38px;
+    padding: 7px 11px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+}
+
+form p input:not([type="checkbox"]):not([type="radio"]),
+form p select,
+form p textarea {
+    display: block;
+    width: min(100%, 520px);
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+    accent-color: var(--blue);
+}
+
+input[aria-invalid="true"] {
+    border-color: var(--danger);
+}
+
+[role="alert"],
+.errorlist {
+    color: var(--danger);
+}
+
+section[aria-label] {
+    margin-bottom: 1.25rem;
+    padding: 14px 18px;
+    border: 1px solid var(--blue-border);
+    border-radius: 6px;
+    background: var(--blue-light);
+}
+
+section[aria-label] p:last-child {
+    margin-bottom: 0;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    border-color: var(--border);
+}
+
+th,
+td {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    text-align: left;
+    vertical-align: middle;
+}
+
+th {
+    background: var(--blue-light);
+    color: var(--blue-dark);
+    font-weight: 600;
+}
+
+tbody tr:nth-child(even) {
+    background: #f8fbff;
+}
+
+tbody tr:hover {
+    background: #eef5ff;
+}
+
+table input[type="number"] {
+    width: 110px;
+}
+
+#carritoTabla {
+    border: 1px solid var(--border);
+}
+
+#carritoTabla button {
+    padding: 5px 10px;
+    border-color: var(--danger);
+    background: var(--danger);
+}
+
+#carritoTabla button:hover {
+    border-color: var(--danger-dark);
+    background: var(--danger-dark);
+}
+
+#totalMonto {
+    color: var(--blue-dark);
+}
+
+#btnCobrar {
+    padding: 10px 20px;
+    font-weight: 600;
+}
+
+.dataTables_wrapper,
+.dt-container {
+    width: 100%;
+    color: var(--text);
+}
+
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter,
+.dataTables_wrapper .dataTables_info,
+.dataTables_wrapper .dataTables_paginate,
+.dt-container .dt-length,
+.dt-container .dt-search,
+.dt-container .dt-info,
+.dt-container .dt-paging {
+    margin: 10px 0;
+}
+
+.dataTables_wrapper .dataTables_filter input,
+.dataTables_wrapper .dataTables_length select,
+.dt-container .dt-search input,
+.dt-container .dt-length select {
+    min-height: 34px;
+    margin: 0 5px;
+    padding: 5px 8px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button,
+.dt-container .dt-paging-button {
+    border-radius: 5px !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current,
+.dt-container .dt-paging-button.current {
+    border-color: var(--blue) !important;
+    background: var(--blue) !important;
+    color: #fff !important;
+}
+
+.dt-buttons,
+.dataTables_wrapper .dt-buttons {
+    margin: 8px 0;
+}
+
+.dt-button,
+.dt-buttons button {
+    margin-right: 6px;
+}
+
+.success,
+.messages .success {
+    padding: 10px 14px;
+    border: 1px solid #a3cfbb;
+    border-radius: 6px;
+    background: #d1e7dd;
+    color: #0a3622;
+    list-style: none;
+}
+
+.error,
+.messages .error {
+    padding: 10px 14px;
+    border: 1px solid #f1aeb5;
+    border-radius: 6px;
+    background: #f8d7da;
+    color: #58151c;
+    list-style: none;
+}
+
+@media (max-width: 600px) {
+    body {
+        padding: 10px;
+    }
+
+    header,
+    main {
+        padding: 14px;
+    }
+
+    nav {
+        gap: 6px;
+    }
+
+    nav a {
+        padding: 5px 8px;
+    }
+
+    th,
+    td {
+        padding: 8px;
+        white-space: nowrap;
+    }
+}
